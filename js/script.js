@@ -91,11 +91,6 @@ function generateCDMask(cd) {
     }
   };
 
-  console.log({
-    type: 'FeatureCollection',
-    features: [turf.mask(feature, mask)]
-  });
-
   return {
     type: 'FeatureCollection',
     features: [turf.mask(feature, mask)]
@@ -127,12 +122,22 @@ try {
     });
 
     map.addLayer({
-      id: 'cd',
+      id: 'cd-polygon',
       type: 'fill',
       source: 'cd',
       paint: {
         'fill-color': '#fff',
         'fill-opacity': 0.9
+      }
+    });
+
+    map.addLayer({
+      id: 'cd-line',
+      type: 'line',
+      source: 'cd',
+      paint: {
+        'line-color': 'rgba(0,0,0,0.3)',
+        'line-width': 2
       }
     });
 
@@ -542,19 +547,30 @@ function createPrintMap(
   };
 
   renderMap.once('load', async function() {
-    await renderMap.addLayer({
-      id: 'cd',
+    renderMap.addSource('cd', {
+      type: 'geojson',
+      data: generateCDMask(form.cdSelect.value)
+    });
+
+    renderMap.addLayer({
+      id: 'cd-polygon',
       type: 'fill',
-      source: {
-        type: 'geojson',
-        data: generateCDMask(form.cdSelect.value)
-      },
+      source: 'cd',
       paint: {
-        'fill-color': '#088',
-        'fill-opacity': 0.8
+        'fill-color': '#fff',
+        'fill-opacity': 0.9
       }
     });
 
+    renderMap.addLayer({
+      id: 'cd-line',
+      type: 'line',
+      source: 'cd',
+      paint: {
+        'line-color': 'rgba(0,0,0,0.3)',
+        'line-width': 2
+      }
+    });
     await sleep(2000);
 
     if (format == 'png') {
