@@ -27,36 +27,40 @@ var mapTilerAccessToken = '';
 
 const CD_BEST_FIT = {
   101: {
-    lat: 40.7121,
-    lng: -74.0098,
-    zoom: 15.85,
+    lat: 40.7124,
+    lng: -74.0089,
+    zoom: 15.83,
     height: 30,
     width: 20,
-    comments: 'north'
+    comments: 'north',
+    rotate: 7
   },
   102: {
     lat: 40.7293,
     lng: -74.0029,
-    zoom: 15.68,
+    zoom: 15.7,
     height: 20,
     width: 30,
-    comments: 'street-north'
+    comments: 'street-north',
+    rotate: 28.7
   },
   103: {
-    lat: 40.7185,
-    lng: -73.9867,
-    zoom: 15.61,
+    lat: 40.7183,
+    lng: -73.9865,
+    zoom: 15.72,
     height: 30,
     width: 20,
-    comments: 'street-north'
+    comments: 'street-north',
+    rotate: 22.3
   },
   104: {
-    lat: 40.7554,
-    lng: -73.9963,
+    lat: 40.7454,
+    lng: -73.9726,
     zoom: 15.47,
     height: 30,
     width: 20,
-    comments: 'street-north'
+    comments: 'street-north',
+    rotate: 28.7
   },
   105: {
     lat: 40.7511,
@@ -64,7 +68,8 @@ const CD_BEST_FIT = {
     zoom: 15.48,
     height: 30,
     width: 20,
-    comments: 'street-north'
+    comments: 'street-north',
+    rotate: 28.7
   },
   106: {
     lat: 40.7452,
@@ -72,7 +77,8 @@ const CD_BEST_FIT = {
     zoom: 15.5,
     height: 30,
     width: 20,
-    comments: 'street-north'
+    comments: 'street-north',
+    rotate: 28.7
   },
   107: {
     lat: 40.7872,
@@ -80,7 +86,8 @@ const CD_BEST_FIT = {
     zoom: 15.3,
     height: 30,
     width: 20,
-    comments: 'street-north'
+    comments: 'street-north',
+    rotate: 28.7
   },
   108: {
     lat: 40.7681,
@@ -88,23 +95,26 @@ const CD_BEST_FIT = {
     zoom: 15.37,
     height: 30,
     width: 20,
-    comments: 'street-north'
+    comments: 'street-north',
+    rotate: 28.7
   },
   109: {
-    lat: 40.8175,
-    lng: -73.9554,
+    lat: 40.8179,
+    lng: -73.955,
     zoom: 15.48,
     height: 30,
     width: 20,
-    comments: 'street-north'
+    comments: 'street-north',
+    rotate: 28.7
   },
   110: {
-    lat: 40.8177,
-    lng: -73.9454,
+    lat: 40.8171,
+    lng: -73.9435,
     zoom: 15.21,
     height: 30,
     width: 20,
-    comments: 'street-north'
+    comments: 'street-north',
+    rotate: 28.7
   },
   111: {
     lat: 40.796,
@@ -112,15 +122,17 @@ const CD_BEST_FIT = {
     zoom: 15.22,
     height: 30,
     width: 20,
-    comments: 'street-north'
+    comments: 'street-north',
+    rotate: 28.7
   },
   112: {
-    lat: 40.8547,
-    lng: -73.9334,
-    zoom: 14.94,
+    lat: 40.8527,
+    lng: -73.9303,
+    zoom: 15,
     height: 30,
     width: 20,
-    comments: 'street-north'
+    comments: 'street-north',
+    rotate: 0
   }
 };
 
@@ -181,11 +193,11 @@ function generateCDMask(cd) {
       type: 'Polygon',
       coordinates: [
         [
-          [-75.7781982421875, 39.18969082109678],
-          [-71.729736328125, 39.18969082109678],
-          [-71.729736328125, 41.98807738309159],
-          [-75.7781982421875, 41.98807738309159],
-          [-75.7781982421875, 39.18969082109678]
+          [-74.5806884765625, 40.317231732315236],
+          [-73.2183837890625, 40.317231732315236],
+          [-73.2183837890625, 41.31082388091818],
+          [-74.5806884765625, 41.31082388091818],
+          [-74.5806884765625, 40.317231732315236]
         ]
       ]
     }
@@ -193,7 +205,7 @@ function generateCDMask(cd) {
 
   return {
     type: 'FeatureCollection',
-    features: [turf.mask(turf.buffer(feature, 50, { units: 'feet' }), mask)]
+    features: [turf.mask(turf.buffer(feature, 55, { units: 'feet' }), mask)]
   };
 }
 
@@ -248,9 +260,10 @@ try {
       feature => feature.properties.BoroCD === cd
     );
     if (parseInt(cd) in CD_BEST_FIT) {
-      const { lat, lng, zoom } = CD_BEST_FIT[cd];
+      const { lat, lng, zoom, rotate } = CD_BEST_FIT[cd];
       map.setCenter([lng, lat]);
       map.setZoom(zoom);
+      map.setBearing(rotate);
     } else {
       const bounds = turf.bbox(feature);
       map.fitBounds(bounds, {
@@ -442,9 +455,10 @@ form.cdSelect.addEventListener('change', function() {
     feature => feature.properties.BoroCD === cd
   );
   if (parseInt(cd) in CD_BEST_FIT) {
-    const { lat, lng, zoom } = CD_BEST_FIT[cd];
+    const { lat, lng, zoom, rotate } = CD_BEST_FIT[cd];
     map.setCenter([lng, lat]);
     map.setZoom(zoom);
+    map.setBearing(rotate);
   } else {
     const bounds = turf.bbox(feature);
     map.fitBounds(bounds, {
@@ -692,7 +706,7 @@ function createPrintMap(
         'line-width': 1
       }
     });
-    await sleep(2000);
+    await sleep(5000);
 
     if (format == 'png') {
       renderMap.getCanvas().toBlob(function(blob) {
