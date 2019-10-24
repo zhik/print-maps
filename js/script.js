@@ -25,6 +25,105 @@ mapboxgl.accessToken =
   'pk.eyJ1IjoiemhpayIsImEiOiJjaW1pbGFpdHQwMGNidnBrZzU5MjF5MTJiIn0.N-EURex2qvfEiBsm-W9j7w';
 var mapTilerAccessToken = '';
 
+const CD_BEST_FIT = {
+  101: {
+    lat: 40.7121,
+    lng: -74.0098,
+    zoom: 15.85,
+    height: 30,
+    width: 20,
+    comments: 'north'
+  },
+  102: {
+    lat: 40.7293,
+    lng: -74.0029,
+    zoom: 15.68,
+    height: 20,
+    width: 30,
+    comments: 'street-north'
+  },
+  103: {
+    lat: 40.7185,
+    lng: -73.9867,
+    zoom: 15.61,
+    height: 30,
+    width: 20,
+    comments: 'street-north'
+  },
+  104: {
+    lat: 40.7554,
+    lng: -73.9963,
+    zoom: 15.47,
+    height: 30,
+    width: 20,
+    comments: 'street-north'
+  },
+  105: {
+    lat: 40.7511,
+    lng: -73.9854,
+    zoom: 15.48,
+    height: 30,
+    width: 20,
+    comments: 'street-north'
+  },
+  106: {
+    lat: 40.7452,
+    lng: -73.9727,
+    zoom: 15.5,
+    height: 30,
+    width: 20,
+    comments: 'street-north'
+  },
+  107: {
+    lat: 40.7872,
+    lng: -73.9769,
+    zoom: 15.3,
+    height: 30,
+    width: 20,
+    comments: 'street-north'
+  },
+  108: {
+    lat: 40.7681,
+    lng: -73.9563,
+    zoom: 15.37,
+    height: 30,
+    width: 20,
+    comments: 'street-north'
+  },
+  109: {
+    lat: 40.8175,
+    lng: -73.9554,
+    zoom: 15.48,
+    height: 30,
+    width: 20,
+    comments: 'street-north'
+  },
+  110: {
+    lat: 40.8177,
+    lng: -73.9454,
+    zoom: 15.21,
+    height: 30,
+    width: 20,
+    comments: 'street-north'
+  },
+  111: {
+    lat: 40.796,
+    lng: -73.9323,
+    zoom: 15.22,
+    height: 30,
+    width: 20,
+    comments: 'street-north'
+  },
+  112: {
+    lat: 40.8547,
+    lng: -73.9334,
+    zoom: 14.94,
+    height: 30,
+    width: 20,
+    comments: 'street-north'
+  }
+};
+
 var form = document.getElementById('config');
 
 if (!mapboxgl.accessToken || mapboxgl.accessToken.length < 10) {
@@ -61,7 +160,8 @@ function updateLocationInputs() {
     lat = parseFloat(center[1]).toFixed(4),
     lon = parseFloat(center[0]).toFixed(4);
 
-  form.zoomInput.value = zoom;
+  form.zoomInput.value = parseFloat(zoom).toFixed(2);
+  form.rotateInput.value = map.getBearing();
   form.latInput.value = lat;
   form.lonInput.value = lon;
 }
@@ -93,7 +193,7 @@ function generateCDMask(cd) {
 
   return {
     type: 'FeatureCollection',
-    features: [turf.mask(feature, mask)]
+    features: [turf.mask(turf.buffer(feature, 50, { units: 'feet' }), mask)]
   };
 }
 
@@ -136,19 +236,27 @@ try {
       type: 'line',
       source: 'cd',
       paint: {
-        'line-color': 'rgba(0,0,0,0.3)',
-        'line-width': 2
+        'line-color': 'rgba(0,0,0,0.1)',
+        'line-width': 1
       }
     });
 
     //zoom to feature bounds
+    const cd = parseInt(form.cdSelect.value);
+
     const feature = mn_cd.features.find(
-      feature => feature.properties.BoroCD === parseInt(form.cdSelect.value)
+      feature => feature.properties.BoroCD === cd
     );
-    const bounds = turf.bbox(feature);
-    map.fitBounds(bounds, {
-      padding: 20
-    });
+    if (parseInt(cd) in CD_BEST_FIT) {
+      const { lat, lng, zoom } = CD_BEST_FIT[cd];
+      map.setCenter([lng, lat]);
+      map.setZoom(zoom);
+    } else {
+      const bounds = turf.bbox(feature);
+      map.fitBounds(bounds, {
+        padding: 20
+      });
+    }
   });
 
   map.on('moveend', updateLocationInputs).on('zoomend', updateLocationInputs);
@@ -328,13 +436,21 @@ form.cdSelect.addEventListener('change', function() {
   map.getSource('cd').setData(generateCDMask(form.cdSelect.value));
 
   //zoom to feature bounds
+  const cd = parseInt(form.cdSelect.value);
+
   const feature = mn_cd.features.find(
-    feature => feature.properties.BoroCD === parseInt(form.cdSelect.value)
+    feature => feature.properties.BoroCD === cd
   );
-  const bounds = turf.bbox(feature);
-  map.fitBounds(bounds, {
-    padding: 20
-  });
+  if (parseInt(cd) in CD_BEST_FIT) {
+    const { lat, lng, zoom } = CD_BEST_FIT[cd];
+    map.setCenter([lng, lat]);
+    map.setZoom(zoom);
+  } else {
+    const bounds = turf.bbox(feature);
+    map.fitBounds(bounds, {
+      padding: 20
+    });
+  }
 });
 
 form.styleSelect.addEventListener('change', function() {
@@ -388,6 +504,11 @@ form.lonInput.addEventListener('change', function() {
 form.zoomInput.addEventListener('change', function(e) {
   'use strict';
   map.setZoom(e.target.value);
+});
+
+form.rotateInput.addEventListener('change', function(e) {
+  'use strict';
+  map.setBearing(e.target.value);
 });
 
 //
@@ -567,8 +688,8 @@ function createPrintMap(
       type: 'line',
       source: 'cd',
       paint: {
-        'line-color': 'rgba(0,0,0,0.3)',
-        'line-width': 2
+        'line-color': 'rgba(0,0,0,0.1)',
+        'line-width': 1
       }
     });
     await sleep(2000);

@@ -53,8 +53,8 @@
       <div class="form-group">
         <label for="styleSelect">Map style</label>
         <select id="styleSelect" class="form-control">
-          <option value="mapbox://styles/zhik/ck1kvleww97pz1ck2mbu6k6hj">Test</option>
-          <option value="mapbox://styles/mapbox/outdoors-v10">Mapbox Outdoors</option>
+          <option value="mapbox://styles/zhik/ck1kvleww97pz1ck2mbu6k6hj/draft">Test 2</option>
+          <option value="mapbox://styles/nikkip/ck20rpaard7pi1cow1dh57yhe">Test</option>
           <option value="mapbox://styles/mapbox/emerald-v8">Mapbox Emerald</option>
           <option value="mapbox://styles/mapbox/light-v9">Mapbox Light</option>
           <option value="mapbox://styles/mapbox/streets-v10">Mapbox Streets</option>
@@ -105,13 +105,19 @@
         <div class="col-sm-4">
           <div class="form-group" id="zoomGroup">
             <label for="zoomInput">Zoom</label>
-            <input type="text" class="form-control" id="zoomInput" autocomplete="off" value="">
+            <input type="number" step=".01" class="form-control" id="zoomInput" autocomplete="off" value="">
           </div>
         </div>
       </div>
     </div>
   </div>
   <div class="row">
+      <div class="col-sm-4">
+          <div class="form-group" id="rotateGroup">
+            <label for="rotateInput">Rotation</label>
+            <input type="number" step=".01" class="form-control" id="rotateInput" autocomplete="off" value="">
+          </div>
+        </div>
     <div class="col-sm-5">
       <div class="form-group">
         <label for="cdSelect">Community District</label>
